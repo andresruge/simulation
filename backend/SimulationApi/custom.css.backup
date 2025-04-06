@@ -1,0 +1,64 @@
+/* Custom CSS for Swagger UI */
+.swagger-ui {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.swagger-ui .topbar {
+  background-color: #334155;
+}
+
+.swagger-ui .info .title {
+  color: #1e293b;
+  font-size: 2.5em;
+}
+
+.swagger-ui .info .title small {
+  background-color: #10b981;
+}
+
+.swagger-ui .btn.execute {
+  background-color: #10b981;
+  border-color: #10b981;
+}
+
+.swagger-ui .btn.execute:hover {
+  background-color: #059669;
+}
+
+.swagger-ui .opblock.opblock-get {
+  background: rgba(14, 165, 233, 0.1);
+  border-color: #0ea5e9;
+}
+
+.swagger-ui .opblock.opblock-post {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: #10b981;
+}
+
+.swagger-ui .opblock.opblock-delete {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: #ef4444;
+}
+
+.swagger-ui .opblock.opblock-put {
+  background: rgba(249, 115, 22, 0.1);
+  border-color: #f97316;
+}
+
+.swagger-ui .opblock .opblock-summary-method {
+  font-weight: bold;
+}
+
+.swagger-ui table tbody tr td {
+  padding: 10px;
+}
+
+.swagger-ui .response-col_status {
+  font-weight: bold;
+}
+
+.swagger-ui .markdown p,
+.swagger-ui .renderedMarkdown p {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
