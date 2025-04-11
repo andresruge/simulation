@@ -45,7 +45,7 @@ A full stack application to simulate background processing with a .NET 9 Minimal
    dotnet run
    ```
 
-The API will be available at `http://localhost:5001`.
+The API will be available at `http://localhost:5000`.
 
 ### Frontend
 

@@ -1,121 +1,114 @@
-import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { processApi } from "../api/processApi";
-import { Process } from "../types/process";
-import { Card } from "../components/Card";
-import { Button } from "../components/Button";
-import { CreateProcessForm } from "../components/CreateProcessForm";
+import { Process, ProcessStatus } from "../types";
+import Button from "../components/Button";
+import Card from "../components/Card";
 
-export const ProcessListPage: React.FC = () => {
+const ProcessListPage: React.FC = () => {
   const [processes, setProcesses] = useState<Process[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showCreateForm, setShowCreateForm] = useState<boolean>(false);
-
-  const fetchProcesses = async () => {
-    try {
-      setLoading(true);
-      const data = await processApi.getAllProcesses();
-      setProcesses(data);
-      setError(null);
-    } catch (err) {
-      setError("Failed to fetch processes");
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const navigate = useNavigate();
 
   useEffect(() => {
+    const fetchProcesses = async () => {
+      try {
+        const data = await processApi.getAllProcesses();
+        setProcesses(data);
+      } catch {
+        setError("Failed to load processes");
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchProcesses();
   }, []);
 
-  const handleCreateProcess = async (items: number[]) => {
-    try {
-      setLoading(true);
-      await processApi.createProcess({ items });
-      fetchProcesses();
-      setShowCreateForm(false);
-    } catch (err) {
-      setError("Failed to create process");
-      console.error(err);
-    } finally {
-      setLoading(false);
+  const getStatusColor = (status: ProcessStatus) => {
+    switch (status) {
+      case ProcessStatus.NotStarted:
+        return "bg-yellow-100 text-yellow-800";
+      case ProcessStatus.Running:
+        return "bg-blue-100 text-blue-800";
+      case ProcessStatus.Completed:
+        return "bg-green-100 text-green-800";
+      case ProcessStatus.Cancelled:
+        return "bg-red-100 text-red-800";
+      case ProcessStatus.CancelledWithRevert:
+        return "bg-orange-100 text-orange-800";
+      case ProcessStatus.RevertFailed:
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-4">
+    <div className="w-full">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Process Simulation</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Processes</h1>
         <Button
-          label={showCreateForm ? "Cancel" : "Create Process"}
-          onClick={() => setShowCreateForm(!showCreateForm)}
-          variant={showCreateForm ? "secondary" : "primary"}
+          label="Create New Process"
+          onClick={() => navigate("/processes/create")}
+          variant="primary"
+          className="text-sm"
         />
       </div>
 
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded mb-4 text-sm">
           {error}
         </div>
       )}
 
-      {showCreateForm && (
-        <div className="mb-6">
-          <Card title="Create New Process">
-            <CreateProcessForm
-              onSubmit={handleCreateProcess}
-              loading={loading}
-            />
-          </Card>
-        </div>
-      )}
-
-      {loading && processes.length === 0 ? (
-        <div className="text-center py-10">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-t-blue-500 border-gray-200"></div>
-          <p className="mt-2">Loading processes...</p>
-        </div>
-      ) : processes.length === 0 ? (
-        <div className="text-center py-10 bg-gray-50 rounded-lg">
-          <p className="text-gray-500">No processes found.</p>
-          {!showCreateForm && (
-            <Button
-              label="Create Process"
-              onClick={() => setShowCreateForm(true)}
-              variant="primary"
-            />
-          )}
-        </div>
+      {loading ? (
+        <div className="text-center py-8">Loading...</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {processes.map((process) => (
-            <Link
-              to={`/process/${process.id}`}
-              key={process.id}
-              className="block transition-transform hover:scale-105"
-            >
-              <Card title={`Process: ${process.id.slice(0, 8)}...`}>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">Status:</span>
-                    <span>{process.status}</span>
+            <Card key={process.id}>
+              <div className="p-4 bg-white hover:shadow-md transition-shadow">
+                <div className="flex flex-col space-y-3">
+                  <div className="flex justify-between items-start">
+                    <h2 className="text-base font-semibold text-gray-900 truncate">
+                      Process #{process.id.slice(0, 8)}
+                    </h2>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                        process.status
+                      )}`}
+                    >
+                      {process.status}
+                    </span>
                   </div>
-                  <div>
-                    <span className="font-medium">Items:</span>{" "}
-                    {process.items.length}
+                  <div className="text-sm space-y-1">
+                    <p className="text-gray-600">
+                      <span className="font-medium">Items:</span>{" "}
+                      {process.itemsToProcess.length}
+                    </p>
+                    <p className="text-gray-600">
+                      <span className="font-medium">Processed:</span>{" "}
+                      {process.processedItems.length}
+                    </p>
                   </div>
-                  <div>
-                    <span className="font-medium">Processed:</span>{" "}
-                    {process.processedItems.length}
+                  <div className="flex justify-end mt-2">
+                    <Button
+                      label="View Details"
+                      onClick={() => navigate(`/processes/${process.id}`)}
+                      variant="secondary"
+                      className="text-xs py-1 px-3"
+                    />
                   </div>
                 </div>
-              </Card>
-            </Link>
+              </div>
+            </Card>
           ))}
         </div>
       )}
     </div>
   );
 };
+
+export default ProcessListPage;

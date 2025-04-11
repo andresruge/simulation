@@ -1,19 +1,18 @@
-import React, { ReactNode } from "react";
+import React from "react";
 
 interface CardProps {
-  title?: string;
-  children: ReactNode;
+  children: React.ReactNode;
+  className?: string;
 }
 
-export const Card: React.FC<CardProps> = ({ title, children }) => {
+const Card: React.FC<CardProps> = ({ children, className = "" }) => {
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden">
-      {title && (
-        <div className="border-b border-gray-200 px-4 py-3">
-          <h3 className="text-lg font-medium text-gray-800">{title}</h3>
-        </div>
-      )}
-      <div className="p-4">{children}</div>
+    <div
+      className={`bg-white rounded-lg shadow-md p-3 border border-gray-200 hover:border-blue-500 transition-colors duration-200 ${className}`}
+    >
+      {children}
     </div>
   );
 };
+
+export default Card;
