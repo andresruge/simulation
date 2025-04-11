@@ -69,7 +69,7 @@ const ProcessListPage: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {processes.map((process) => (
             <Card key={process.id}>
-              <div className="p-4 bg-white hover:shadow-md transition-shadow">
+              <div className="p-4 bg-white hover:shadow-md transition-shadow text-left">
                 <div className="flex flex-col space-y-3">
                   <div className="flex justify-between items-start">
                     <h2 className="text-base font-semibold text-gray-900 truncate">

@@ -149,11 +149,11 @@ export default function ProcessDetailPage() {
       )}
 
       <div className="bg-white rounded-lg shadow-md border border-gray-200">
-        <div className="p-6">
+        <div className="p-6 text-left">
           <div className="space-y-6">
             {/* Header Section */}
             <div className="flex flex-col sm:flex-row justify-between sm:items-start border-b border-gray-200 pb-4 gap-4">
-              <div>
+              <div className="text-left">
                 <h2 className="text-xl font-semibold text-gray-900 mb-2">
                   Process #{process.id}
                 </h2>
@@ -181,11 +181,11 @@ export default function ProcessDetailPage() {
 
             {/* Items Sections */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
+              <div className="text-left">
                 <h3 className="text-lg font-medium text-gray-900 mb-3">
                   Items to Process
                 </h3>
-                <div className="bg-gray-50 rounded-lg p-4">
+                <div className="bg-gray-50 rounded-lg p-4 text-left">
                   {process.itemsToProcess.length > 0 ? (
                     <div className="flex flex-wrap gap-2">
                       {process.itemsToProcess.map((item, index) => (
@@ -205,11 +205,11 @@ export default function ProcessDetailPage() {
                 </div>
               </div>
 
-              <div>
+              <div className="text-left">
                 <h3 className="text-lg font-medium text-gray-900 mb-3">
                   Processed Items
                 </h3>
-                <div className="bg-green-50 rounded-lg p-4">
+                <div className="bg-green-50 rounded-lg p-4 text-left">
                   {process.processedItems.length > 0 ? (
                     <div className="flex flex-wrap gap-2">
                       {process.processedItems.map((item, index) => (
