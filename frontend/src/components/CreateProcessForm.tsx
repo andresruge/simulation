@@ -1,6 +1,45 @@
-import React, { useState } from "react";
+import React, { useState, CSSProperties } from "react";
 import Button from "../components/Button";
-import { processApi } from "../api/processApi";
+
+// Inline styles
+const styles: Record<string, CSSProperties> = {
+  formContainer: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "1rem",
+  },
+  formGroup: {
+    display: "flex",
+    flexDirection: "column",
+  },
+  label: {
+    fontSize: "0.875rem",
+    fontWeight: "500",
+    color: "#374151",
+    marginBottom: "0.25rem",
+  },
+  input: {
+    width: "100%",
+    padding: "0.5rem 0.75rem",
+    border: "1px solid #d1d5db",
+    borderRadius: "0.375rem",
+    boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+    outline: "none",
+  },
+  inputFocus: {
+    borderColor: "#3b82f6",
+    boxShadow: "0 0 0 2px rgba(59, 130, 246, 0.25)",
+  },
+  errorMessage: {
+    marginTop: "0.25rem",
+    fontSize: "0.875rem",
+    color: "#dc2626",
+  },
+  actions: {
+    display: "flex",
+    justifyContent: "flex-end",
+  },
+};
 
 interface CreateProcessFormProps {
   onSubmit: (items: number[]) => void;
@@ -13,6 +52,7 @@ export const CreateProcessForm: React.FC<CreateProcessFormProps> = ({
 }) => {
   const [itemsInput, setItemsInput] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
+  const [isFocused, setIsFocused] = useState(false);
 
   const handleCreateProcess = () => {
     try {
@@ -43,12 +83,9 @@ export const CreateProcessForm: React.FC<CreateProcessFormProps> = ({
   };
 
   return (
-    <div className="space-y-4">
-      <div>
-        <label
-          htmlFor="items"
-          className="block text-sm font-medium text-gray-700 mb-1"
-        >
+    <div style={styles.formContainer}>
+      <div style={styles.formGroup}>
+        <label htmlFor="items" style={styles.label}>
           Items (comma-separated numbers)
         </label>
         <input
@@ -57,13 +94,18 @@ export const CreateProcessForm: React.FC<CreateProcessFormProps> = ({
           value={itemsInput}
           onChange={(e) => setItemsInput(e.target.value)}
           placeholder="1, 2, 3, 4, 5"
-          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          style={{
+            ...styles.input,
+            ...(isFocused ? styles.inputFocus : {}),
+          }}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
           disabled={loading}
         />
-        {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+        {error && <p style={styles.errorMessage}>{error}</p>}
       </div>
 
-      <div className="flex justify-end">
+      <div style={styles.actions}>
         <Button
           label="Create Process"
           onClick={handleCreateProcess}

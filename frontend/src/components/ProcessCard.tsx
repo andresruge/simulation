@@ -1,8 +1,72 @@
-import React, { useEffect } from "react";
+import React, { CSSProperties } from "react";
 import { Process, ProcessStatus } from "../types/process";
 import Card from "./Card"; // Corrected import
 import Button from "./Button"; // Corrected import
 import { ProgressBar } from "./ProgressBar";
+
+// Inline styles
+const styles: Record<string, CSSProperties> = {
+  container: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "1rem",
+    padding: "1.5rem",
+  },
+  statusRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: "0.5rem",
+  },
+  label: {
+    fontWeight: "500",
+  },
+  badge: {
+    padding: "0.25rem 0.5rem",
+    color: "white",
+    fontSize: "0.875rem",
+    borderRadius: "9999px",
+  },
+  progressContainer: {
+    marginTop: "0.25rem",
+  },
+  progressInfo: {
+    textAlign: "right",
+    fontSize: "0.875rem",
+    marginTop: "0.25rem",
+  },
+  sectionTitle: {
+    fontWeight: "500",
+    marginBottom: "0.25rem",
+  },
+  itemsContainer: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "0.25rem",
+  },
+  itemBadge: {
+    padding: "0.25rem 0.5rem",
+    fontSize: "0.875rem",
+    borderRadius: "9999px",
+  },
+  itemProcessed: {
+    backgroundColor: "#d1fae5",
+    color: "#065f46",
+  },
+  itemPending: {
+    backgroundColor: "#f3f4f6",
+    color: "#374151",
+  },
+  noItemsText: {
+    fontSize: "0.875rem",
+    color: "#6b7280",
+  },
+  actionsContainer: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "0.5rem",
+    paddingTop: "0.5rem",
+  },
+};
 
 interface ProcessCardProps {
   process: Process;
@@ -19,20 +83,20 @@ export const ProcessCard: React.FC<ProcessCardProps> = ({
   onProcessItem,
   loading = false,
 }) => {
-  const getStatusColor = (): string => {
+  const getStatusColor = (): CSSProperties => {
     switch (process.status) {
       case ProcessStatus.NotStarted:
-        return "bg-gray-500";
+        return { backgroundColor: "#6b7280" };
       case ProcessStatus.Running:
-        return "bg-blue-500";
+        return { backgroundColor: "#3b82f6" };
       case ProcessStatus.Completed:
-        return "bg-green-500";
+        return { backgroundColor: "#10b981" };
       case ProcessStatus.Cancelled:
       case ProcessStatus.CancelledWithRevert:
       case ProcessStatus.RevertFailed:
-        return "bg-red-500";
+        return { backgroundColor: "#ef4444" };
       default:
-        return "bg-gray-500";
+        return { backgroundColor: "#6b7280" };
     }
   };
 
@@ -90,21 +154,24 @@ export const ProcessCard: React.FC<ProcessCardProps> = ({
 
   return (
     <Card title={`Process: ${process.id}`}>
-      <div className="space-y-4 p-6">
-        <div className="flex items-center gap-2">
-          <span className="font-medium">Status:</span>
+      <div style={styles.container}>
+        <div style={styles.statusRow}>
+          <span style={styles.label}>Status:</span>
           <span
-            className={`px-2 py-1 text-white text-sm rounded-full ${getStatusColor()}`}
+            style={{
+              ...styles.badge,
+              ...getStatusColor(),
+            }}
           >
             {process.status?.toString()}
           </span>
         </div>
 
         <div>
-          <span className="font-medium">Progress:</span>
-          <div className="mt-1">
+          <span style={styles.label}>Progress:</span>
+          <div style={styles.progressContainer}>
             <ProgressBar progress={progressPercentage} />
-            <div className="text-right text-sm mt-1">
+            <div style={styles.progressInfo}>
               {process.processedItems.length} / {process.items.length} items (
               {progressPercentage}%)
             </div>
@@ -112,16 +179,17 @@ export const ProcessCard: React.FC<ProcessCardProps> = ({
         </div>
 
         <div>
-          <h4 className="font-medium mb-1">Items</h4>
-          <div className="flex flex-wrap gap-1">
+          <h4 style={styles.sectionTitle}>Items</h4>
+          <div style={styles.itemsContainer}>
             {process.items.map((item) => (
               <span
                 key={item}
-                className={`px-2 py-1 text-sm rounded-full ${
-                  process.processedItems.includes(item)
-                    ? "bg-green-100 text-green-800"
-                    : "bg-gray-100 text-gray-800"
-                }`}
+                style={{
+                  ...styles.itemBadge,
+                  ...(process.processedItems.includes(item)
+                    ? styles.itemProcessed
+                    : styles.itemPending),
+                }}
               >
                 {item}
               </span>
@@ -130,26 +198,24 @@ export const ProcessCard: React.FC<ProcessCardProps> = ({
         </div>
 
         <div>
-          <h4 className="font-medium mb-1">Processed Items</h4>
+          <h4 style={styles.sectionTitle}>Processed Items</h4>
           {process.processedItems.length > 0 ? (
-            <div className="flex flex-wrap gap-1">
+            <div style={styles.itemsContainer}>
               {process.processedItems.map((item) => (
                 <span
                   key={item}
-                  className="px-2 py-1 text-sm rounded-full bg-green-100 text-green-800"
+                  style={{ ...styles.itemBadge, ...styles.itemProcessed }}
                 >
                   {item}
                 </span>
               ))}
             </div>
           ) : (
-            <p className="text-sm text-gray-500">
-              No items have been processed yet.
-            </p>
+            <p style={styles.noItemsText}>No items have been processed yet.</p>
           )}
         </div>
 
-        <div className="flex flex-wrap gap-2 pt-2">
+        <div style={styles.actionsContainer}>
           {/* Show button directly if not started */}
           {isNotStarted && onStart && (
             <Button

@@ -62,9 +62,11 @@ export const processApi = {
     return normalizeProcess(response.data);
   },
 
-  createProcess: async (items: string[]): Promise<Process> => {
+  createProcess: async (items: number[]): Promise<Process> => {
+    // Convert numbers to strings for the API
+    const stringItems = items.map((item) => item.toString());
     const response = await axios.post<ApiProcess>(`${API_URL}/processes`, {
-      items,
+      items: stringItems,
     });
     return normalizeProcess(response.data);
   },
