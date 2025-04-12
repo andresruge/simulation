@@ -1,9 +1,108 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, CSSProperties } from "react";
 import { useNavigate } from "react-router-dom";
 import { processApi } from "../api/processApi";
 import { Process, ProcessStatus } from "../types";
 import Button from "../components/Button";
 import Card from "../components/Card";
+
+// Inline styles since Tailwind isn't applying correctly
+const styles: Record<string, CSSProperties> = {
+  pageContainer: {
+    width: "100%",
+  },
+  headerContainer: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "1.5rem",
+  },
+  title: {
+    fontSize: "1.5rem",
+    fontWeight: "bold",
+    color: "#111827",
+  },
+  errorMessage: {
+    backgroundColor: "#fef2f2",
+    border: "1px solid #fee2e2",
+    color: "#b91c1c",
+    padding: "0.5rem 1rem",
+    borderRadius: "0.25rem",
+    marginBottom: "1rem",
+    fontSize: "0.875rem",
+  },
+  loadingContainer: {
+    textAlign: "center",
+    padding: "2rem 0",
+  },
+  grid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(1, 1fr)",
+    gap: "1rem",
+  },
+  cardContent: {
+    padding: "1rem",
+    backgroundColor: "white",
+    transition: "box-shadow 0.3s",
+    textAlign: "left",
+  },
+  cardInner: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "0.75rem",
+  },
+  cardHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+  },
+  cardTitle: {
+    fontSize: "1rem",
+    fontWeight: "600",
+    color: "#111827",
+    textOverflow: "ellipsis",
+    overflow: "hidden",
+    whiteSpace: "nowrap",
+  },
+  badge: {
+    padding: "0.25rem 0.5rem",
+    borderRadius: "9999px",
+    fontSize: "0.75rem",
+    fontWeight: "500",
+  },
+  cardStats: {
+    fontSize: "0.875rem",
+    display: "flex",
+    flexDirection: "column",
+    gap: "0.25rem",
+  },
+  statText: {
+    color: "#4b5563",
+  },
+  statLabel: {
+    fontWeight: "500",
+  },
+  cardActions: {
+    display: "flex",
+    justifyContent: "flex-end",
+    marginTop: "0.5rem",
+  },
+};
+
+// Media query for responsive grid
+if (typeof window !== "undefined") {
+  if (window.matchMedia("(min-width: 768px)").matches) {
+    styles.grid = {
+      ...styles.grid,
+      gridTemplateColumns: "repeat(2, 1fr)",
+    };
+  }
+  if (window.matchMedia("(min-width: 1024px)").matches) {
+    styles.grid = {
+      ...styles.grid,
+      gridTemplateColumns: "repeat(3, 1fr)",
+    };
+  }
+}
 
 const ProcessListPage: React.FC = () => {
   const [processes, setProcesses] = useState<Process[]>([]);
@@ -29,26 +128,26 @@ const ProcessListPage: React.FC = () => {
   const getStatusColor = (status: ProcessStatus) => {
     switch (status) {
       case ProcessStatus.NotStarted:
-        return "bg-yellow-100 text-yellow-800";
+        return { backgroundColor: "#fef3c7", color: "#92400e" };
       case ProcessStatus.Running:
-        return "bg-blue-100 text-blue-800";
+        return { backgroundColor: "#dbeafe", color: "#1e40af" };
       case ProcessStatus.Completed:
-        return "bg-green-100 text-green-800";
+        return { backgroundColor: "#d1fae5", color: "#065f46" };
       case ProcessStatus.Cancelled:
-        return "bg-red-100 text-red-800";
+        return { backgroundColor: "#fee2e2", color: "#991b1b" };
       case ProcessStatus.CancelledWithRevert:
-        return "bg-orange-100 text-orange-800";
+        return { backgroundColor: "#ffedd5", color: "#9a3412" };
       case ProcessStatus.RevertFailed:
-        return "bg-red-100 text-red-800";
+        return { backgroundColor: "#fee2e2", color: "#991b1b" };
       default:
-        return "bg-gray-100 text-gray-800";
+        return { backgroundColor: "#f3f4f6", color: "#374151" };
     }
   };
 
   return (
-    <div className="w-full">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Processes</h1>
+    <div style={styles.pageContainer}>
+      <div style={styles.headerContainer}>
+        <h1 style={styles.title}>Processes</h1>
         <Button
           label="Create New Process"
           onClick={() => navigate("/processes/create")}
@@ -57,43 +156,47 @@ const ProcessListPage: React.FC = () => {
         />
       </div>
 
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded mb-4 text-sm">
-          {error}
-        </div>
-      )}
+      {error && <div style={styles.errorMessage}>{error}</div>}
 
       {loading ? (
-        <div className="text-center py-8">Loading...</div>
+        <div style={styles.loadingContainer}>Loading...</div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div style={styles.grid}>
           {processes.map((process) => (
             <Card key={process.id}>
-              <div className="p-4 bg-white hover:shadow-md transition-shadow text-left">
-                <div className="flex flex-col space-y-3">
-                  <div className="flex justify-between items-start">
-                    <h2 className="text-base font-semibold text-gray-900 truncate">
+              <div
+                style={styles.cardContent}
+                onMouseOver={(e) =>
+                  (e.currentTarget.style.boxShadow =
+                    "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)")
+                }
+                onMouseOut={(e) => (e.currentTarget.style.boxShadow = "none")}
+              >
+                <div style={styles.cardInner}>
+                  <div style={styles.cardHeader}>
+                    <h2 style={styles.cardTitle}>
                       Process #{process.id.slice(0, 8)}
                     </h2>
                     <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                        process.status
-                      )}`}
+                      style={{
+                        ...styles.badge,
+                        ...getStatusColor(process.status),
+                      }}
                     >
                       {process.status}
                     </span>
                   </div>
-                  <div className="text-sm space-y-1">
-                    <p className="text-gray-600">
-                      <span className="font-medium">Items:</span>{" "}
+                  <div style={styles.cardStats}>
+                    <p style={styles.statText}>
+                      <span style={styles.statLabel}>Items:</span>{" "}
                       {process.itemsToProcess.length}
                     </p>
-                    <p className="text-gray-600">
-                      <span className="font-medium">Processed:</span>{" "}
+                    <p style={styles.statText}>
+                      <span style={styles.statLabel}>Processed:</span>{" "}
                       {process.processedItems.length}
                     </p>
                   </div>
-                  <div className="flex justify-end mt-2">
+                  <div style={styles.cardActions}>
                     <Button
                       label="View Details"
                       onClick={() => navigate(`/processes/${process.id}`)}

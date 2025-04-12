@@ -39,16 +39,20 @@ public static class ProcessItem
             if (nextItem == 0) // Since 0 is the default for int, we use it to check if there are no more items
             {
                 // Complete the process
-                var completeUpdate = Builders<Process>.Update.Set(p => p.Status, ProcessStatus.Completed);
+                var completeUpdate = Builders<Process>.Update
+                    .Set(p => p.Status, ProcessStatus.Completed)
+                    .Set(p => p.UpdatedAt, DateTime.UtcNow); // Update the timestamp
                 await _context.Processes.UpdateOneAsync(filter, completeUpdate);
                 return new Result(true, "All items processed, process completed");
             }
 
             // Update processed items
-            var update = Builders<Process>.Update.Push(p => p.ProcessedItems, nextItem);
+            var update = Builders<Process>.Update
+                .Push(p => p.ProcessedItems, nextItem)
+                .Set(p => p.UpdatedAt, DateTime.UtcNow); // Update the timestamp
             await _context.Processes.UpdateOneAsync(filter, update);
 
             return new Result(true, $"Item {nextItem} processed successfully", nextItem);
         }
     }
-} 
+}

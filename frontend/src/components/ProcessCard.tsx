@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Process, ProcessStatus } from "../types/process";
-import { Card } from "./Card";
-import { Button } from "./Button";
+import Card from "./Card"; // Corrected import
+import Button from "./Button"; // Corrected import
 import { ProgressBar } from "./ProgressBar";
 
 interface ProcessCardProps {
@@ -19,16 +19,6 @@ export const ProcessCard: React.FC<ProcessCardProps> = ({
   onProcessItem,
   loading = false,
 }) => {
-  // Add debug logging when component renders
-  useEffect(() => {
-    console.log("ProcessCard rendering with process:", process);
-    console.log("Process status type:", typeof process.status);
-    console.log("Process status value:", process.status);
-    console.log("Is NotStarted?", process.status === ProcessStatus.NotStarted);
-    console.log("Is Running?", process.status === ProcessStatus.Running);
-    console.log("Available actions:", { onStart, onCancel, onProcessItem });
-  }, [process, onStart, onCancel, onProcessItem]);
-
   const getStatusColor = (): string => {
     switch (process.status) {
       case ProcessStatus.NotStarted:
@@ -46,48 +36,42 @@ export const ProcessCard: React.FC<ProcessCardProps> = ({
     }
   };
 
-  // Handle status comparison with a fallback to numeric comparison
+  // Simplified status check function
   const checkStatus = (expectedStatus: ProcessStatus): boolean => {
-    try {
-      // First try direct comparison
-      if (process.status === expectedStatus) {
-        return true;
-      }
-
-      // Check if we're dealing with a numeric status that hasn't been converted
-      if (typeof process.status === "number") {
-        // Map the enum values to their numeric equivalents
-        const statusMap = {
-          [ProcessStatus.NotStarted]: 0,
-          [ProcessStatus.Running]: 1,
-          [ProcessStatus.Completed]: 2,
-          [ProcessStatus.Cancelled]: 3,
-          [ProcessStatus.CancelledWithRevert]: 4,
-          [ProcessStatus.RevertFailed]: 5,
-        };
-
-        // Compare the numeric values directly
-        return process.status === statusMap[expectedStatus];
-      }
-
-      // Then try string comparison
-      if (
-        typeof process.status === "string" &&
-        process.status === expectedStatus.toString()
-      ) {
-        return true;
-      }
-
-      // Then try comparing the string representation
-      if (process.status?.toString() === expectedStatus.toString()) {
-        return true;
-      }
-
-      return false;
-    } catch (err) {
-      console.error("Error comparing status:", err);
-      return false;
+    // Direct comparison (works for both string and numeric enums if type matches)
+    if (process.status === expectedStatus) {
+      return true;
     }
+
+    // Fallback: Check if process.status is the numeric value corresponding to the enum member
+    // This handles cases where the API sends a number but the enum is used for comparison.
+    if (
+      typeof process.status === "number" &&
+      process.status === Number(expectedStatus)
+    ) {
+      return true;
+    }
+
+    // Fallback: Check if process.status is the string representation of the enum key
+    // This handles cases where the API might send the enum key as a string ("Running")
+    // This assumes ProcessStatus is a numeric enum where ProcessStatus[ProcessStatus.Running] === "Running"
+    if (
+      typeof process.status === "string" &&
+      process.status === ProcessStatus[expectedStatus as number]
+    ) {
+      return true;
+    }
+
+    // Fallback: Check if process.status is the string representation of the numeric enum value
+    // This handles cases where the API sends the numeric value as a string ("1")
+    if (
+      typeof process.status === "string" &&
+      process.status === String(Number(expectedStatus))
+    ) {
+      return true;
+    }
+
+    return false;
   };
 
   const isRunning = checkStatus(ProcessStatus.Running);
@@ -99,13 +83,6 @@ export const ProcessCard: React.FC<ProcessCardProps> = ({
     ProcessStatus.RevertFailed,
   ].some((status) => checkStatus(status));
 
-  console.log("Status flags:", {
-    isNotStarted,
-    isRunning,
-    isCompleted,
-    isCancelled,
-  });
-
   const progressPercentage =
     process.items.length > 0
       ? Math.round((process.processedItems.length / process.items.length) * 100)
@@ -113,7 +90,7 @@ export const ProcessCard: React.FC<ProcessCardProps> = ({
 
   return (
     <Card title={`Process: ${process.id}`}>
-      <div className="space-y-4">
+      <div className="space-y-4 p-6">
         <div className="flex items-center gap-2">
           <span className="font-medium">Status:</span>
           <span
@@ -210,73 +187,6 @@ export const ProcessCard: React.FC<ProcessCardProps> = ({
               />
             </>
           )}
-
-          {/* Debug section - always visible for troubleshooting */}
-          <div className="w-full mt-4 p-3 bg-gray-100 rounded-md">
-            <h4 className="text-xs font-bold mb-1">Debug Info:</h4>
-            <div className="text-xs">
-              <div>
-                Status: {process.status?.toString()} (type:{" "}
-                {typeof process.status})
-              </div>
-              <div>isNotStarted: {isNotStarted ? "true" : "false"}</div>
-              <div>isRunning: {isRunning ? "true" : "false"}</div>
-              <div>isCompleted: {isCompleted ? "true" : "false"}</div>
-              <div>isCancelled: {isCancelled ? "true" : "false"}</div>
-              <div>
-                Handlers available:
-                {onStart ? " onStart" : ""}
-                {onCancel ? " onCancel" : ""}
-                {onProcessItem ? " onProcessItem" : ""}
-              </div>
-            </div>
-          </div>
-
-          {/* Emergency Actions - Always visible regardless of status */}
-          <div className="w-full mt-4 p-3 bg-yellow-100 rounded-md">
-            <h4 className="text-xs font-bold mb-1">Emergency Actions:</h4>
-            <div className="flex flex-wrap gap-2">
-              {onStart && (
-                <button
-                  onClick={onStart}
-                  className="text-xs bg-blue-500 hover:bg-blue-700 text-white py-1 px-2 rounded"
-                  disabled={loading}
-                >
-                  Force Start
-                </button>
-              )}
-              {onProcessItem && (
-                <button
-                  onClick={onProcessItem}
-                  className="text-xs bg-green-500 hover:bg-green-700 text-white py-1 px-2 rounded"
-                  disabled={loading}
-                >
-                  Force Process Item
-                </button>
-              )}
-              {onCancel && (
-                <>
-                  <button
-                    onClick={() => onCancel(false)}
-                    className="text-xs bg-red-500 hover:bg-red-700 text-white py-1 px-2 rounded"
-                    disabled={loading}
-                  >
-                    Force Cancel
-                  </button>
-                  <button
-                    onClick={() => onCancel(true)}
-                    className="text-xs bg-orange-500 hover:bg-orange-700 text-white py-1 px-2 rounded"
-                    disabled={loading}
-                  >
-                    Force Cancel w/ Revert
-                  </button>
-                </>
-              )}
-            </div>
-            <p className="text-xs mt-2 text-gray-700">
-              Use these actions if the normal buttons aren't appearing.
-            </p>
-          </div>
         </div>
       </div>
     </Card>

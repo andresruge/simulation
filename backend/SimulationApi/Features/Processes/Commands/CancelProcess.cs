@@ -35,10 +35,12 @@ public static class CancelProcess
             }
 
             var newStatus = command.Revert ? ProcessStatus.CancelledWithRevert : ProcessStatus.Cancelled;
-            var update = Builders<Process>.Update.Set(p => p.Status, newStatus);
+            var update = Builders<Process>.Update
+                .Set(p => p.Status, newStatus)
+                .Set(p => p.UpdatedAt, DateTime.UtcNow); // Update the timestamp
             await _context.Processes.UpdateOneAsync(filter, update);
 
             return new Result(true, $"Process cancelled successfully with {(command.Revert ? "revert" : "no revert")}");
         }
     }
-} 
+}

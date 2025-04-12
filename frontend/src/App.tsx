@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import ProcessListPage from "./pages/ProcessListPage";
 import ProcessDetailPage from "./pages/ProcessDetailPage";
-import "./App.css";
+import "./App.css"; // Restore this import for centering
 
 function App() {
   return (

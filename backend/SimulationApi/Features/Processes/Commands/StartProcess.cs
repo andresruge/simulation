@@ -34,10 +34,12 @@ public static class StartProcess
                 return new Result(false, $"Cannot start process with status {process.Status}");
             }
 
-            var update = Builders<Process>.Update.Set(p => p.Status, ProcessStatus.Running);
+            var update = Builders<Process>.Update
+                .Set(p => p.Status, ProcessStatus.Running)
+                .Set(p => p.UpdatedAt, DateTime.UtcNow); // Update the timestamp
             await _context.Processes.UpdateOneAsync(filter, update);
 
             return new Result(true, "Process started successfully");
         }
     }
-} 
+}
