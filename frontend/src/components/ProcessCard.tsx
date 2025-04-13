@@ -1,7 +1,7 @@
 import React, { CSSProperties } from "react";
-import { Process, ProcessStatus } from "../types/process";
-import Card from "./Card"; // Corrected import
-import Button from "./Button"; // Corrected import
+import { Process, ProcessStatus } from "../types";
+import Card from "./Card";
+import Button from "./Button";
 import { ProgressBar } from "./ProgressBar";
 
 // Inline styles
@@ -66,6 +66,11 @@ const styles: Record<string, CSSProperties> = {
     gap: "0.5rem",
     paddingTop: "0.5rem",
   },
+  cardHeader: {
+    fontWeight: "600",
+    fontSize: "1.125rem",
+    marginBottom: "0.5rem",
+  },
 };
 
 interface ProcessCardProps {
@@ -102,13 +107,12 @@ export const ProcessCard: React.FC<ProcessCardProps> = ({
 
   // Simplified status check function
   const checkStatus = (expectedStatus: ProcessStatus): boolean => {
-    // Direct comparison (works for both string and numeric enums if type matches)
+    // Direct comparison
     if (process.status === expectedStatus) {
       return true;
     }
 
-    // Fallback: Check if process.status is the numeric value corresponding to the enum member
-    // This handles cases where the API sends a number but the enum is used for comparison.
+    // Fallback: Check if process.status is the numeric value
     if (
       typeof process.status === "number" &&
       process.status === Number(expectedStatus)
@@ -116,21 +120,10 @@ export const ProcessCard: React.FC<ProcessCardProps> = ({
       return true;
     }
 
-    // Fallback: Check if process.status is the string representation of the enum key
-    // This handles cases where the API might send the enum key as a string ("Running")
-    // This assumes ProcessStatus is a numeric enum where ProcessStatus[ProcessStatus.Running] === "Running"
+    // Fallback: String representation check
     if (
       typeof process.status === "string" &&
-      process.status === ProcessStatus[expectedStatus as number]
-    ) {
-      return true;
-    }
-
-    // Fallback: Check if process.status is the string representation of the numeric enum value
-    // This handles cases where the API sends the numeric value as a string ("1")
-    if (
-      typeof process.status === "string" &&
-      process.status === String(Number(expectedStatus))
+      process.status === String(expectedStatus)
     ) {
       return true;
     }
@@ -140,21 +133,24 @@ export const ProcessCard: React.FC<ProcessCardProps> = ({
 
   const isRunning = checkStatus(ProcessStatus.Running);
   const isNotStarted = checkStatus(ProcessStatus.NotStarted);
-  const isCompleted = checkStatus(ProcessStatus.Completed);
-  const isCancelled = [
-    ProcessStatus.Cancelled,
-    ProcessStatus.CancelledWithRevert,
-    ProcessStatus.RevertFailed,
-  ].some((status) => checkStatus(status));
 
   const progressPercentage =
-    process.items.length > 0
-      ? Math.round((process.processedItems.length / process.items.length) * 100)
+    process.itemsToProcess.length + process.processedItems.length > 0
+      ? Math.round(
+          (process.processedItems.length /
+            (process.itemsToProcess.length + process.processedItems.length)) *
+            100
+        )
       : 0;
 
+  // All available items (both to process and already processed)
+  const allItems = [...process.itemsToProcess, ...process.processedItems];
+
   return (
-    <Card title={`Process: ${process.id}`}>
+    <Card>
       <div style={styles.container}>
+        <h3 style={styles.cardHeader}>Process: {process.id}</h3>
+
         <div style={styles.statusRow}>
           <span style={styles.label}>Status:</span>
           <span
@@ -172,7 +168,7 @@ export const ProcessCard: React.FC<ProcessCardProps> = ({
           <div style={styles.progressContainer}>
             <ProgressBar progress={progressPercentage} />
             <div style={styles.progressInfo}>
-              {process.processedItems.length} / {process.items.length} items (
+              {process.processedItems.length} / {allItems.length} items (
               {progressPercentage}%)
             </div>
           </div>
@@ -181,7 +177,7 @@ export const ProcessCard: React.FC<ProcessCardProps> = ({
         <div>
           <h4 style={styles.sectionTitle}>Items</h4>
           <div style={styles.itemsContainer}>
-            {process.items.map((item) => (
+            {allItems.map((item: string) => (
               <span
                 key={item}
                 style={{
@@ -201,7 +197,7 @@ export const ProcessCard: React.FC<ProcessCardProps> = ({
           <h4 style={styles.sectionTitle}>Processed Items</h4>
           {process.processedItems.length > 0 ? (
             <div style={styles.itemsContainer}>
-              {process.processedItems.map((item) => (
+              {process.processedItems.map((item: string) => (
                 <span
                   key={item}
                   style={{ ...styles.itemBadge, ...styles.itemProcessed }}
@@ -231,7 +227,7 @@ export const ProcessCard: React.FC<ProcessCardProps> = ({
             <Button
               label="Process Next Item"
               onClick={onProcessItem}
-              variant="success"
+              variant="primary"
               disabled={loading}
             />
           )}
@@ -248,7 +244,7 @@ export const ProcessCard: React.FC<ProcessCardProps> = ({
               <Button
                 label="Cancel with Revert"
                 onClick={() => onCancel(true)}
-                variant="warning"
+                variant="secondary"
                 disabled={loading}
               />
             </>

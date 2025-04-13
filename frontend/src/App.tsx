@@ -6,8 +6,9 @@ import "./App.css"; // Keep this import for centering
 
 // App container styles
 const appContainerStyle = {
-  minHeight: "100vh",
   backgroundColor: "#f9fafb", // Equivalent to bg-gray-50
+  minHeight: "100%",
+  height: "auto",
 };
 
 // Content container styles

@@ -1,11 +1,11 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, CSSProperties } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { processApi } from "../api/processApi";
 import { Process, ProcessStatus } from "../types";
 import Button from "../components/Button";
 
 // Inline styles since Tailwind isn't applying correctly
-const styles = {
+const styles: Record<string, CSSProperties> = {
   card: {
     backgroundColor: "white",
     borderRadius: "0.5rem",
@@ -17,7 +17,7 @@ const styles = {
   },
   headerSection: {
     display: "flex",
-    flexDirection: "column",
+    flexDirection: "column" as const,
     justifyContent: "space-between",
     borderBottom: "1px solid #e5e7eb",
     paddingBottom: "1rem",
@@ -28,7 +28,7 @@ const styles = {
     fontWeight: "600",
     color: "#111827",
     marginBottom: "0.5rem",
-    textAlign: "left",
+    textAlign: "left" as const,
   },
   statusBadge: {
     padding: "0.25rem 0.75rem",
@@ -47,7 +47,7 @@ const styles = {
     fontWeight: "500",
     color: "#111827",
     marginBottom: "0.75rem",
-    textAlign: "left",
+    textAlign: "left" as const,
   },
   itemsBox: {
     borderRadius: "0.5rem",
@@ -64,7 +64,7 @@ const styles = {
   },
   actionsSection: {
     display: "flex",
-    flexWrap: "wrap",
+    flexWrap: "wrap" as const,
     gap: "0.75rem",
     paddingTop: "1.5rem",
     borderTop: "1px solid #e5e7eb",
