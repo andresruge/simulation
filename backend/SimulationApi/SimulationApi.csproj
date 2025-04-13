@@ -13,6 +13,8 @@
     <PackageReference Include="MongoDB.Driver" Version="3.3.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.0" />
     <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="8.1.0" />
+    <PackageReference Include="MediatR" Version="12.3.0" /> <!-- Added MediatR -->
+    <PackageReference Include="FluentResults" Version="3.16.0" /> <!-- Added FluentResults -->
   </ItemGroup>
 
 </Project>

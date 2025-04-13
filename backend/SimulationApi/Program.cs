@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Swashbuckle.AspNetCore.SwaggerUI;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
+using FluentResults; // Added for Result handling in endpoint
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,6 +51,7 @@ builder.Services.AddScoped<CreateProcess.Handler>();
 builder.Services.AddScoped<StartProcess.Handler>();
 builder.Services.AddScoped<CancelProcess.Handler>();
 builder.Services.AddScoped<ProcessItem.Handler>();
+builder.Services.AddScoped<ProcessItemManually.Handler>(); // Register the new handler
 builder.Services.AddScoped<GetProcessById.Handler>();
 builder.Services.AddScoped<GetAllProcesses.Handler>();
 
@@ -310,8 +312,50 @@ app.MapPost("/api/processes/{id}/process-item", async (string id, ProcessItem.Ha
     return operation;
 });
 
+// POST: Process specific item manually
+app.MapPost("/api/processes/{id}/items/{itemNumber}/process-manually", async (string id, int itemNumber, ProcessItemManually.Handler handler) =>
+{
+    var command = new ProcessItemManually.Command(id, itemNumber);
+    var result = await handler.Handle(command, CancellationToken.None); // Assuming no cancellation token needed here
+
+    if (result.IsFailed)
+        return Results.BadRequest(result.ToResult()); // Convert FluentResult to standard result for response
+
+    // Check for specific success messages if needed
+    if (result.Successes.Any(s => s.Message.Contains("already processed")) || result.Successes.Any(s => s.Message.Contains("processed concurrently")))
+    {
+        // Return Ok but maybe with a specific message or status code if desired (e.g., 202 Accepted or 200 OK with message)
+        return Results.Ok(new { ItemNumber = result.Value, Message = result.Successes.First().Message }); // Use First() as we know one exists
+    }
+
+    return Results.Ok(new { ItemNumber = result.Value }); // Return the processed item number on success
+})
+.WithName("ProcessItemManually")
+.WithOpenApi(operation => {
+    operation.Summary = "Manually process a specific item";
+    operation.Description = "Processes a specific item within a process immediately (synchronously).";
+    operation.Tags = new List<OpenApiTag> { new OpenApiTag { Name = "Process Actions" } };
+
+    // Parameters 'id' and 'itemNumber' are automatically inferred from the route and method signature.
+
+    // Define responses
+    if (!operation.Responses.ContainsKey("200"))
+        operation.Responses["200"] = new OpenApiResponse();
+    operation.Responses["200"].Description = "The item was processed successfully, or was already processed.";
+
+    if (!operation.Responses.ContainsKey("400"))
+        operation.Responses["400"] = new OpenApiResponse();
+    operation.Responses["400"].Description = "The item could not be processed (process not found, item not found, or processing error).";
+
+    if (!operation.Responses.ContainsKey("404")) // Add 404 for process/item not found consistency
+        operation.Responses["404"] = new OpenApiResponse();
+    operation.Responses["404"].Description = "The specified process or item number was not found."; // Although handler returns BadRequest, API level could be 404
+
+    return operation;
+});
+
+
 // Use this to debug startup issues
-Console.WriteLine("Application started and listening on " + builder.Configuration["Kestrel:Endpoints:Http:Url"]);
+Console.WriteLine("Application started and listening on " + (builder.Configuration["Kestrel:Endpoints:Http:Url"] ?? "http://*:5000")); // Added null check
 
 app.Run();
-
